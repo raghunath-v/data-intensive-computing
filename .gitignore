@@ -2,3 +2,6 @@
 topten_classes/
 *.bkp*
 topten.jar
+*.swm
+*.swn
+*.swo
