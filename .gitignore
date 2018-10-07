@@ -7,3 +7,5 @@ topten.jar
 *.swo
 *lab1/src/topten.zip
 lab2/
+*project/
+*target/
