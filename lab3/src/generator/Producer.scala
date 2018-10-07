@@ -27,7 +27,7 @@ object ScalaProducerExample extends App {
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
     val producer = new KafkaProducer[String, String](props)
 
-    while (num>0) {
+    while (true) {
         val data = new ProducerRecord[String, String](topic, null, getRandomVal)
         producer.send(data)
         num = num - 1;
