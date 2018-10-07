@@ -9,3 +9,4 @@ topten.jar
 lab2/
 *project/
 *target/
+*.log
