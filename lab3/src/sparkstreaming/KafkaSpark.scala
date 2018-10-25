@@ -30,7 +30,7 @@ object KafkaSpark {
     //val sparkConf = new SparkConf().setAppName("DirectKafkaWordCount")
     val sparkConf = new SparkConf().setAppName("DirectKafkaAvg").setMaster("local[2]").set("spark.executor.memory","1g");
     val ssc = new StreamingContext(sparkConf, Seconds(2))
-
+    ssc.checkpoint(".")
     // make a connection to Kafka and read (key, value) pairs from it
     val kafkaConf = Map(
             "metadata.broker.list" -> "localhost:9092",
@@ -40,18 +40,33 @@ object KafkaSpark {
     val messages = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaConf, Set("avg"))
     
     val values = messages.map( _._2)
-    val pairs = values.flatMap{ _.split(" ") }.map(x => (x, 1)).reduceByKey(_ + _)
+    val pairs = values.flatMap{ _.split(" ") }.map(x => (x, 1D)).reduceByKey(_ + _)
     //val pairs =values.flatMap{ _.split(" ") }.map(i => { var s=i.split(",") ( s(0), s(1).toInt) })
 
     // measure the average value for each key in a stateful manner
-    def mappingFunc(key: String, value: Option[Int], state: State[(Double,Long)]): Option[(String, Double)] = {
-	val (prevSum,prevN)= state.getOption.getOrElse((0D,0L))
-        val (sum,n) = ((prevSum +value.getOrElse(0) ).toDouble , prevN +1L)
+    /*def mappingFunc(key: String, value: Option[Double], state: State[Double]): (String, Double) = {
+	val curr_avg= state.get()
+        val new_avg = (curr_avg +value.get)/2
                             
-        val output = (key, sum/n)
-        state.update((sum,n))
-        Some(output)
-    }
+        val output = (key, new_avg)
+        state.update(new_avg)
+        //Some(output)
+        return output
+    }*/
+   def mappingFunc(key: String, value: Option[Double], state: State[Double]): (String, Double) = {
+      if (state.exists() && value.isDefined) {
+        val es = state.get()        
+        val nstate = (es + value.get) / 2 
+        state.update(nstate)
+        return (key, nstate)
+      } else if (value.isDefined) {
+        val in = value.get
+        state.update(in)
+        return (key, in)
+      } else {
+        return ("",0.0)
+      }
+    } 
     val stateDstream = pairs.mapWithState(StateSpec.function(mappingFunc _))
 
     // store the result in Cassandra
@@ -59,5 +74,6 @@ object KafkaSpark {
 
     ssc.start()
     ssc.awaitTermination()
+    session.close()
   }
 }
