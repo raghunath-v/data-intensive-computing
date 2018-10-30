@@ -11,3 +11,5 @@ lab2/
 *.log
 lab3/
 lab4/
+*_classes/
+*.jar
