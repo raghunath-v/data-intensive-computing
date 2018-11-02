@@ -66,10 +66,10 @@ public class AvgViews
 			int iter = 0;
 	    		for (FloatWritable val : values) {
 	    		    sum += val.get();
-			    iter++;
+			    iter=iter+1;
 	    		}
       
-	    		result.set(sum/iter);
+	    		result.set(sum/(iter));
 	    		context.write(key, result);
 		}
     	}
