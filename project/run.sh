@@ -1,17 +1,29 @@
-#!/bin/sh
+#!/bin/bash
+
+file=$1
+log_file="log.txt"
+
+
+if [[ -z "$file" ]]; then
+    	echo "argument error"
+	exit 1
+fi
 
 export HADOOP_CLASSPATH=$($HADOOP_HOME/bin/hadoop classpath)
 
 hdfs dfs -put youtubedata.txt .
+hdfs dfs -rm -r output 
 
-DIR='viral_classes'
+DIR=$file"_classes"
 if [ -d "$DIR" ]; then
 	rm -r $DIR
 fi
 mkdir $DIR
 
-javac -cp $HADOOP_CLASSPATH -d $DIR Viral.java
+javac -cp $HADOOP_CLASSPATH -d $DIR $file.java
 
-jar -cvf viral.jar -C $DIR .
+jar -cvf $file.jar -C $DIR .
 
-hadoop jar viral.jar project.Viral youtubedata.txt output
+hadoop jar $file.jar project.$file youtubedata.txt output
+
+hdfs dfs -cat output/part-r-00000 | sort -n -k2 -r | head -n5

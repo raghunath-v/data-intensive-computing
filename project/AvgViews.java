@@ -15,9 +15,9 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-// Program to find the most popular video category in youtube.
+// Program to find the video category with most average views per video in youtube.
 
-public class Viral 
+public class AvgViews 
 {
 	// Mapper class that has a function to output {(Category1, 1),...., (CategoryN, 1))
 	public static class TokenizerMapper extends Mapper<LongWritable, Text, Text, FloatWritable> 
@@ -79,7 +79,7 @@ public class Viral
 	{
 		Configuration conf = new Configuration();
 		Job job = Job.getInstance(conf, "word count");
-		job.setJarByClass(Viral.class);
+		job.setJarByClass(AvgViews.class);
     
 		job.setMapperClass(TokenizerMapper.class);
 		job.setCombinerClass(IntSumReducer.class);

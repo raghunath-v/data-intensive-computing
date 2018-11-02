@@ -15,18 +15,19 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-// Program to find the most popular video category in youtube.
+// Program to find the video category with most average views per video in youtube.
 
-public class Viral 
+public class Top5uploaders
 {
 	// Mapper class that has a function to output {(Category1, 1),...., (CategoryN, 1))
 	public static class TokenizerMapper extends Mapper<LongWritable, Text, Text, FloatWritable> 
 	{
-		private final static IntWritable one = new IntWritable(1);
+		private final static FloatWritable one = new FloatWritable(1.0f);
 		private  FloatWritable rating = new FloatWritable();
 		private  FloatWritable viewrate = new FloatWritable();
 		private  FloatWritable views = new FloatWritable();
 		private Text cat = new Text();
+		private Text uploader = new Text();
 		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException 
 		{
 			String row = value.toString();
@@ -35,6 +36,7 @@ public class Viral
 			if(data.length > 5)
 			{
 				cat.set(data[3]);
+				uploader.set(data[1]);
 				float view_count = 0;
 				float time = 0;
 				
@@ -52,7 +54,7 @@ public class Viral
                  			rating.set(f);
 				}
 			}
-			context.write(cat, views);
+			context.write(uploader, one);
 		}
 	}
 
@@ -68,8 +70,8 @@ public class Viral
 	    		    sum += val.get();
 			    iter++;
 	    		}
-      
-	    		result.set(sum/iter);
+     			result .set(sum); 
+	    		//result.set(sum/iter);
 	    		context.write(key, result);
 		}
     	}
@@ -79,7 +81,7 @@ public class Viral
 	{
 		Configuration conf = new Configuration();
 		Job job = Job.getInstance(conf, "word count");
-		job.setJarByClass(Viral.class);
+		job.setJarByClass(Top5uploaders.class);
     
 		job.setMapperClass(TokenizerMapper.class);
 		job.setCombinerClass(IntSumReducer.class);
