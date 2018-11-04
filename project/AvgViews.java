@@ -78,7 +78,7 @@ public class AvgViews
 	public static void main(String[] args) throws Exception 
 	{
 		Configuration conf = new Configuration();
-		Job job = Job.getInstance(conf, "word count");
+		Job job = Job.getInstance(conf, "avg views");
 		job.setJarByClass(AvgViews.class);
     
 		job.setMapperClass(TokenizerMapper.class);
