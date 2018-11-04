@@ -13,8 +13,8 @@ fi
 export HADOOP_CLASSPATH=$($HADOOP_HOME/bin/hadoop classpath)
 
 # Store the big data file in hadoop
-hdfs dfs -put youtubedata.txt .
-hdfs dfs -rm -r output 
+$HADOOP_HOME/bin/hdfs dfs -put youtubedata.txt .
+$HADOOP_HOME/bin/hdfs dfs -rm -r output
 
 DIR=$file"_classes"
 if [ -d "$DIR" ]; then
@@ -27,17 +27,17 @@ javac -cp $HADOOP_CLASSPATH -d $DIR $file.java
 
 jar -cvf $file.jar -C $DIR .
 
-hadoop jar $file.jar project.$file youtubedata.txt output
+$HADOOP_HOME/bin/hadoop jar $file.jar project.$file youtubedata.txt output
 
 # Get the output of the program
-hdfs dfs -cat output/part-r-00000 | sort -n -k2 -r | head -n5
+$HADOOP_HOME/bin/hdfs dfs -cat output/part-r-00000 | sort -n -k2 -r | head -n5
 
 if [ "$file" = "AvgViews" ]; then
 
 # Generate the ChartJS script for viewing data on browser
-Labels="$(hdfs dfs -cat output/part-r-00000 | sort -n -k2 -r | head -n5 | sed -e 's/\s.*/"/g' | sed -e 's/^/"/g' | sed ':a;N;$!ba;s/\n/, /g')"
-	
-Data="$(hdfs dfs -cat output/part-r-00000 | sort -n -k2 -r | head -n5 | sed -e 's/.*\s//g' | sed ':a;N;$!ba;s/\n/, /g')"
+Labels="$($HADOOP_HOME/bin/hdfs dfs -cat output/part-r-00000 | sort -n -k2 -r | head -n5 | sed -e 's/\s.*/"/g' | sed -e 's/^/"/g' | sed ':a;N;$!ba;s/\n/, /g')"
+
+Data="$($HADOOP_HOME/bin/hdfs dfs -cat output/part-r-00000 | sort -n -k2 -r | head -n5 | sed -e 's/.*\s//g' | sed ':a;N;$!ba;s/\n/, /g')"
 
 # Write script.js
 cat >./script.js <<EOF
